@@ -44,24 +44,18 @@ class PaddingOracle(object):
 # iv+c0+...{modified c(i-1)}+ci--> m0+m1+...+mi
 #--------------------------------------------------------------
 
-def cycle(cipher): 
-    #print 'cipher'
-    #print hex(int(cipher,16))
+def cycle(cipher):
     message = 0
     text = []
-
     for i in range(0, 16): # from the first byte on right to the first byte on the left
         po = PaddingOracle()
-        for g in range(0, 256): # iv+m0+m1 [104, 32,79,115] = [68,20,4f,73] = ['s', h',' ','O','s'], iv+m0 = [32]=['d','s',' '] 
+        for g in range(0, 256): # try from 0x00 to 0xff(255)
             g2 = long(g << 8*i) + message # shift i byte(s)
-            g2AndPadding = (g2 ^ paddings[i]) << 128 # shift one block(128 bits) right
+            g2AndPadding = (g2 ^ paddings[i]) << 128 # shift one block(128 bits) right, to modify c[n-2]
             newG = hex(long(cipher,16) ^ g2AndPadding) # to int and xor
-            newG2 = newG[2:len(newG)-1]
+            newG2 = newG[2:len(newG)-1] #newG without '(' and the last bytes ')'
             print g
-            #print hex(g2AndPadding)
-        #print '~~~~~~~~~'
-        #print ' '
-            if po.query(newG2):#g==90: # #g == 20: 
+            if po.query(newG2):
                 print '(' + str(i) + ',' + str(g) + ')' 
                 print 'you get a ASCII: ' + chr(g)
                 message = g2
@@ -99,11 +93,12 @@ def cycle2(cipher):
     return ''.join(text)
 #------------------------------------------------------------------
 # create the ciphers list
+# Step 1: Seperate the cipher text into 16 bytes/block. We got n blocks. 
 #------------------------------------------------------------------
 
 ciphers = []
 # 32 digits(2 digit for 1 byte), 
-# 16 bytes/ 128-bit a block)
+# 16 bytes/ 128-bit a block
 for i in range(0, len(fullCipher)/32):
     tempc = []
     for j in range(0, 32):
@@ -114,26 +109,13 @@ for i in range(0, len(fullCipher)/32):
 print ciphers
 
 #------------------------------------------------------------------
-# crack m0
+# crack mn
 #------------------------------------------------------------------
 
-m2 = cycle2(iv+ciphers[0]+ciphers[1]+ciphers[2])
+ #Step 2: only last block # Step 3: inner loop (see the function cycle2)
+mn = cycle2(iv+ciphers[0]+ciphers[1]+ciphers[2])
 print "final result:" + m2
-#p = PaddingOracle()
-#print p.query(iv+fullCipher)
 
 
-#------------------------------------------------------------------
-# crack m0, m1, ..., mn
-#-----------c-------------------------------------------------------
 
-plaintext = ''
-for i in range(0, len(ciphers)):
-    toQuery = iv
-    for j in range(0, i+1):
-        toQuery = toQuery + ciphers[j]
-    plain = cycle(toQuery)
-    print "m[" + str(i) + "] is: " + plain
-    plaintext = plaintext + plain
-print plaintext
 
