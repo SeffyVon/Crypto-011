@@ -1,6 +1,10 @@
 #--------------------------------------------------------------
 #
-# padding oracle attacks on CBC
+# padding oracle attacks on CBC, especially for the last block,
+# because in the ex4_CBCPaddingOracleAttack_general.py, the last
+# block itself has a valid pdding of 0x0808080808080808, we need
+# to treat it specially.
+#
 # Author: Yingjing Feng
 # Email: feng0823yj@gmail.com
 # Blog: http://seffyvon.lofter.com
@@ -72,7 +76,7 @@ def cycle(cipher):
 def cycle2(cipher): 
     #print 'cipher'
     #print hex(int(cipher,16))
-    message = paddings[8]
+    message = paddings[8] # this has a valid padding already.
     text = []
     for i in range(9, 16): # from the first byte on right to the first byte on the left
         po = PaddingOracle()

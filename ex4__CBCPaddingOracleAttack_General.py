@@ -1,6 +1,7 @@
 #--------------------------------------------------------------
 #
-# padding oracle attacks on CBC, especially for the last block
+# padding oracle attacks on CBC
+#
 # Author: Yingjing Feng
 # Email: feng0823yj@gmail.com
 # Blog: http://seffyvon.lofter.com
@@ -47,7 +48,7 @@ def cycle(cipher):
     text = []
     po = PaddingOracle()
     for i in range(0, 16): # from the first byte on right to the first byte on the left
-        for g in range(115, 256): #115 iv+m0+m1
+        for g in range(0, 256): 
             g2 = long(g << 8*i) + message # shift i byte(s)
             g2AndPadding = (g2 ^ paddings[i]) << 128 # shift one block(128 bits) right
             newG = hex(long(cipher,16) ^ g2AndPadding) # to int and xor
